@@ -4,6 +4,14 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Plan sportif — Moez</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<meta name="theme-color" content="#1b2440">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Sport">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
@@ -32,7 +40,7 @@ img{max-width:100%}
 button,input,select,textarea{font:inherit;color:inherit}
 .wrap{max-width:640px;margin:0 auto;padding:0 16px}
 
-header.top{background:var(--ink);color:#fff;padding:22px 0 18px;position:relative;overflow:hidden}
+header.top{background:var(--ink);color:#fff;padding:calc(22px + env(safe-area-inset-top, 0px)) 0 18px;position:relative;overflow:hidden}
 :root[data-theme="dark"] header.top{background:#0a0e1a}
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]) header.top{background:#0a0e1a}}
 header.top h1{font-family:var(--head);font-weight:800;font-size:2.3rem;line-height:1;margin:0;letter-spacing:.01em}
