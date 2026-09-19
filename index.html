@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Plan sportif — Moez</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#eef1f6; --surface:#ffffff; --surface2:#f6f8fb; --ink:#1b2440; --muted:#66708a; --line:#dde3ec;
+  --s1:#f26a21; --s1-soft:#fff0e6; --cardio:#0e9888; --cardio-soft:#e3f6f3; --cf:#7446dc; --cf-soft:#f1ebff;
+  --new:#16a34a; --warn:#d92d20; --warn-soft:#fdecea; --ok:#15803d; --ok-soft:#e7f6ec;
+  --head:'Barlow Condensed', 'Arial Narrow', 'Helvetica Neue', Arial, sans-serif;
+  --body:'Barlow', 'Helvetica Neue', Arial, sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0f1424; --surface:#181f34; --surface2:#1f2740; --ink:#e8ecf5; --muted:#98a2bb; --line:#2a3350;
+    --s1-soft:#3a2518; --cardio-soft:#10302d; --cf-soft:#29204a; --warn-soft:#3d1c1a; --ok-soft:#163020;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0f1424; --surface:#181f34; --surface2:#1f2740; --ink:#e8ecf5; --muted:#98a2bb; --line:#2a3350;
+  --s1-soft:#3a2518; --cardio-soft:#10302d; --cf-soft:#29204a; --warn-soft:#3d1c1a; --ok-soft:#163020;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.45;-webkit-font-smoothing:antialiased;padding-bottom:88px}
+img{max-width:100%}
+button,input,select,textarea{font:inherit;color:inherit}
+.wrap{max-width:640px;margin:0 auto;padding:0 16px}
+
+header.top{background:var(--ink);color:#fff;padding:22px 0 18px;position:relative;overflow:hidden}
+:root[data-theme="dark"] header.top{background:#0a0e1a}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) header.top{background:#0a0e1a}}
+header.top h1{font-family:var(--head);font-weight:800;font-size:2.3rem;line-height:1;margin:0;letter-spacing:.01em}
+header.top p{margin:6px 0 0;color:#c3cbe0;font-size:.95rem}
+.weekbar{display:flex;align-items:center;gap:6px;margin-top:16px}
+.weekbar .nav{border:0;background:rgba(255,255,255,.1);color:#fff;border-radius:8px;width:30px;align-self:stretch;font-size:1.2rem;cursor:pointer}
+.weekbar .nav:disabled{opacity:.3;cursor:default}
+.week{display:flex;gap:6px;flex:1}
+.week button.d{border:0;cursor:pointer;font:inherit;font-size:.78rem}
+.week button.d:disabled{opacity:.35;cursor:default}
+.week .d.sel{outline:2px solid #fff;outline-offset:-2px;box-shadow:0 0 0 2px var(--s1)}
+.week .d.today b::after{content:'';display:block;width:5px;height:5px;border-radius:50%;background:currentColor;margin:2px auto 0}
+.seldate{margin-top:10px;font-size:.9rem;color:#fff}
+.seldate button{border:0;background:none;color:#aeb7cf;text-decoration:underline;cursor:pointer;font-size:.85rem;padding:0 0 0 8px}
+.week .d{flex:1;text-align:center;border-radius:8px;padding:6px 0;background:rgba(255,255,255,.07);font-size:.78rem;color:#aeb7cf}
+.week .d b{display:block;font-family:var(--head);font-size:1.15rem;color:#fff;font-weight:700}
+.week .d.done-s1{background:var(--s1);color:#fff}
+.week .d.done-cardio{background:var(--cardio);color:#fff}
+.week .d.done-cf{background:var(--cf);color:#fff}
+.stripe{height:5px;background:linear-gradient(90deg,var(--s1) 0 33.3%,var(--cardio) 33.3% 66.6%,var(--cf) 66.6%)}
+
+nav.tabs{position:fixed;bottom:0;left:0;right:0;background:var(--surface);border-top:1px solid var(--line);display:flex;justify-content:center;z-index:10;padding-bottom:env(safe-area-inset-bottom)}
+nav.tabs .in{display:flex;max-width:640px;width:100%}
+nav.tabs button{flex:1;border:0;background:none;padding:10px 4px 12px;font-family:var(--head);font-weight:700;font-size:1rem;color:var(--muted);cursor:pointer;border-top:3px solid transparent}
+nav.tabs button[aria-selected="true"]{color:var(--ink)}
+nav.tabs button[data-tab="s1"][aria-selected="true"]{border-top-color:var(--s1)}
+nav.tabs button[data-tab="cardio"][aria-selected="true"]{border-top-color:var(--cardio)}
+nav.tabs button[data-tab="cf"][aria-selected="true"]{border-top-color:var(--cf)}
+nav.tabs button[data-tab="hist"][aria-selected="true"]{border-top-color:var(--ink)}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,summary:focus-visible{outline:2px solid var(--s1);outline-offset:2px}
+
+section.panel{display:none;padding-top:18px}
+section.panel.on{display:block}
+h2{font-family:var(--head);font-weight:800;font-size:1.7rem;margin:0 0 2px;line-height:1.1}
+.lead{color:var(--muted);margin:0 0 14px;font-size:.95rem}
+h3{font-family:var(--head);font-weight:700;font-size:1.2rem;margin:22px 0 8px}
+
+.warm{background:var(--surface);border-radius:12px;padding:6px 14px;border-left:4px solid #3b6fe0}
+.warm label{display:flex;gap:10px;align-items:flex-start;padding:9px 0;border-bottom:1px solid var(--line);cursor:pointer}
+.warm label:last-child{border-bottom:0}
+.warm input{width:20px;height:20px;margin-top:2px;accent-color:#3b6fe0;flex:none}
+.warm input:checked + span{color:var(--muted);text-decoration:line-through}
+
+.bloc{margin-top:14px;display:grid;grid-template-columns:40px 1fr;gap:0 10px}
+.bloc .letter{font-family:var(--head);font-weight:800;font-size:1.9rem;color:var(--s1);line-height:1;padding-top:10px;text-align:center}
+.bloc .rest{grid-column:2;font-size:.82rem;color:var(--muted);margin:4px 0 0 2px}
+.ex{background:var(--surface);border-radius:12px;padding:12px 14px;margin-top:8px;border:1px solid var(--line)}
+.bloc .ex:first-of-type{margin-top:0}
+.ex .name{font-weight:600;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.tag{font-family:var(--head);font-weight:700;font-size:.72rem;letter-spacing:.04em;background:var(--new);color:#fff;border-radius:4px;padding:1px 6px}
+.ex .meta{font-size:.85rem;color:var(--muted);margin-top:2px}
+.ex .alt{display:flex;align-items:center;gap:8px;font-size:.85rem;margin-top:8px;color:var(--muted);cursor:pointer}
+.ex .alt input{accent-color:var(--s1);width:18px;height:18px}
+.ex.use-alt .altname{color:var(--ink);font-weight:600}
+.row{display:flex;gap:8px;margin-top:10px;align-items:flex-end;flex-wrap:wrap}
+.field{display:flex;flex-direction:column;gap:3px}
+.field span{font-size:.72rem;color:var(--muted)}
+.field input{width:64px;padding:9px 6px;border:1px solid var(--line);border-radius:8px;background:var(--surface2);text-align:center;font-weight:600;font-size:1rem}
+.field.kg input{width:78px}
+.hint{font-size:.82rem;margin-top:8px;padding:6px 9px;border-radius:7px;background:var(--surface2);color:var(--muted)}
+.hint.up{background:var(--ok-soft);color:var(--ok);font-weight:600}
+.hint.hold{background:var(--warn-soft);color:var(--warn);font-weight:600}
+
+.pain{background:var(--surface);border-radius:12px;padding:14px;margin-top:22px;border:1px solid var(--line)}
+.pain .lab{display:flex;justify-content:space-between;align-items:baseline;font-weight:600}
+.pain .val{font-family:var(--head);font-size:1.8rem;font-weight:800}
+.pain input[type=range]{width:100%;margin-top:6px;accent-color:var(--s1)}
+.pain .scale{display:flex;justify-content:space-between;font-size:.75rem;color:var(--muted)}
+.pain .msg{font-size:.85rem;margin-top:8px;color:var(--muted)}
+.pain.high .val,.pain.high .msg{color:var(--warn)}
+
+textarea{width:100%;min-height:80px;border:1px solid var(--line);border-radius:10px;padding:10px;background:var(--surface2);resize:vertical}
+.save{display:block;width:100%;margin-top:18px;border:0;border-radius:12px;padding:14px;font-family:var(--head);font-weight:800;font-size:1.25rem;color:#fff;background:var(--s1);cursor:pointer}
+.save.cardio{background:var(--cardio)} .save.cf{background:var(--cf)} .save.ink{background:var(--ink)}
+:root[data-theme="dark"] .save.ink{background:#3b6fe0}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .save.ink{background:#3b6fe0}}
+
+.machine{background:var(--surface);border-radius:12px;padding:12px 14px;margin-top:8px;border:1px solid var(--line);display:grid;grid-template-columns:34px 1fr;gap:4px 10px;align-items:start}
+.machine .n{font-family:var(--head);font-weight:800;font-size:1.5rem;color:var(--cardio);line-height:1.1;text-align:center}
+.machine .t{font-weight:600}
+.machine .c{font-size:.85rem;color:var(--muted)}
+.machine .ctl{grid-column:2;display:flex;gap:8px;align-items:center;margin-top:6px;flex-wrap:wrap}
+.machine .ctl input[type=text]{flex:1;min-width:140px;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--surface2)}
+.machine .done{display:flex;align-items:center;gap:6px;font-size:.85rem;cursor:pointer}
+.machine .done input{width:20px;height:20px;accent-color:var(--cardio)}
+.machine.interval{border-color:var(--cardio);background:var(--cardio-soft)}
+.note-sh{font-size:.82rem;color:var(--warn);margin-top:4px}
+
+.empty{background:var(--surface);border:1px dashed var(--line);border-radius:12px;padding:18px;color:var(--muted);text-align:center}
+.sess{background:var(--surface);border-radius:12px;padding:12px 14px;margin-top:8px;border-left:4px solid var(--s1)}
+.sess.cardio{border-left-color:var(--cardio)} .sess.cf{border-left-color:var(--cf)}
+.sess summary{cursor:pointer;display:flex;justify-content:space-between;gap:8px;list-style:none;align-items:center}
+.sess summary::-webkit-details-marker{display:none}
+.sess .when{font-weight:600}
+.sess .kind{font-size:.85rem;color:var(--muted)}
+.badge{font-family:var(--head);font-weight:700;border-radius:6px;padding:2px 8px;font-size:.9rem;background:var(--surface2);white-space:nowrap}
+.badge.high{background:var(--warn-soft);color:var(--warn)}
+.sess ul{margin:10px 0 0;padding-left:18px;font-size:.9rem}
+.sess .next{display:flex;align-items:center;gap:8px;font-size:.85rem;margin-top:10px;color:var(--muted);flex-wrap:wrap}
+.sess .next select{padding:5px 8px;border-radius:7px;border:1px solid var(--line);background:var(--surface2)}
+.sess .del{border:0;background:none;color:var(--muted);font-size:.8rem;text-decoration:underline;cursor:pointer;margin-top:8px;padding:0}
+
+.chart{background:var(--surface);border-radius:12px;padding:12px 14px;border:1px solid var(--line)}
+.chart svg{display:block;width:100%;height:auto}
+.chart .cap{font-size:.8rem;color:var(--muted);margin-top:4px}
+.meas{display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end}
+.meas .field input{width:90px}
+.meas button{border:0;border-radius:8px;padding:10px 14px;background:var(--ink);color:var(--bg);font-weight:600;cursor:pointer}
+table.m{width:100%;border-collapse:collapse;margin-top:10px;font-size:.9rem}
+table.m td,table.m th{padding:6px 4px;border-bottom:1px solid var(--line);text-align:left}
+table.m th{font-weight:600;color:var(--muted);font-size:.8rem}
+
+.toast{position:fixed;left:50%;bottom:90px;transform:translateX(-50%) translateY(20px);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:10px;font-weight:600;opacity:0;transition:opacity .2s, transform .2s;pointer-events:none;z-index:20}
+.toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
+.sync{font-size:.78rem;color:#aeb7cf;margin-top:10px}
+.shoulder{background:var(--warn-soft);border-radius:12px;padding:12px 14px;margin-top:22px;font-size:.9rem}
+.shoulder b{color:var(--warn)}
+@media (prefers-reduced-motion: reduce){.toast{transition:none}}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="wrap">
+    <h1>Plan sportif</h1>
+    <p>Épaule droite + perte de poids · coach Julien</p>
+    <div class="weekbar">
+      <button class="nav" id="wk-prev" aria-label="Semaine précédente">‹</button>
+      <div class="week" id="week" aria-label="Choisir le jour de la séance"></div>
+      <button class="nav" id="wk-next" aria-label="Semaine suivante">›</button>
+    </div>
+    <div class="seldate" id="seldate"></div>
+    <div class="sync" id="sync">Chargement…</div>
+  </div>
+</header>
+<div class="stripe"></div>
+
+<main class="wrap">
+  <!-- SEANCE 1 -->
+  <section class="panel on" id="p-s1" aria-label="Séance 1">
+    <h2>Haut du corps</h2>
+    <p class="lead">Environ 1 h. Chaque bloc : les 2 exercices enchaînés, puis le repos. 3 tours.</p>
+
+    <h3>Échauffement · 5 min</h3>
+    <div class="warm" id="warm"></div>
+
+    <h3>Exercices</h3>
+    <div id="blocs"></div>
+
+    <div class="pain" id="pain-s1"></div>
+    <label class="field" style="margin-top:14px"><span>Notes (optionnel)</span><textarea id="note-s1" placeholder="Sensations, machine occupée, etc."></textarea></label>
+    <button class="save" id="save-s1">Enregistrer la séance</button>
+  </section>
+
+  <!-- CARDIO -->
+  <section class="panel" id="p-cardio" aria-label="Séance 2">
+    <h2>Cardio</h2>
+    <p class="lead">65 min. Démarre le rameur tranquillement 3 à 5 min pour t’échauffer.</p>
+    <div id="machines"></div>
+    <div class="pain" id="pain-cardio"></div>
+    <label class="field" style="margin-top:14px"><span>Notes (optionnel)</span><textarea id="note-cardio"></textarea></label>
+    <button class="save cardio" id="save-cardio">Enregistrer la séance</button>
+  </section>
+
+  <!-- CROSSFIT -->
+  <section class="panel" id="p-cf" aria-label="Séance 3">
+    <h2>CrossFit</h2>
+    <p class="lead">Optionnelle. Uniquement avec le WOD, les charges et les consignes du coach.</p>
+    <label class="field"><span>WOD / exercices</span><textarea id="cf-wod" placeholder="Exercices donnés par Julien"></textarea></label>
+    <div class="row">
+      <label class="field" style="flex:1"><span>Durée / rounds</span><input id="cf-dur" type="text" style="width:100%;text-align:left"></label>
+    </div>
+    <label class="field" style="margin-top:10px"><span>Charges / notes</span><textarea id="cf-notes"></textarea></label>
+    <div class="shoulder"><b>Épaule droite :</b> évite les mouvements bras au-dessus de la tête sous charge si elle est sensible, et préviens le coach.</div>
+    <div class="pain" id="pain-cf"></div>
+    <button class="save cf" id="save-cf">Enregistrer la séance</button>
+  </section>
+
+  <!-- HISTORIQUE -->
+  <section class="panel" id="p-hist" aria-label="Historique">
+    <h2>Suivi</h2>
+    <p class="lead">Tes séances, la gêne à l’épaule et tes mesures.</p>
+
+    <h3>Gêne à l’épaule droite</h3>
+    <div class="chart" id="chart"></div>
+
+    <h3>Mesures · toutes les 4 semaines</h3>
+    <div class="meas">
+      <label class="field"><span>Poids (kg)</span><input id="m-poids" type="number" inputmode="decimal" step="0.1"></label>
+      <label class="field"><span>Tour de taille (cm)</span><input id="m-taille" type="number" inputmode="decimal" step="0.5"></label>
+      <button id="m-add">Ajouter</button>
+    </div>
+    <div id="m-list"></div>
+
+    <h3>Séances</h3>
+    <div id="hist"></div>
+
+    <div class="shoulder">
+      <b>Repères épaule.</b> Gêne légère qui disparaît après la séance : en général acceptable. Douleur vive pendant un mouvement, ou qui persiste le lendemain : réduire la charge ou passer à l’alternative. Si ça revient souvent, un bilan chez un kiné vaut le coup.
+    </div>
+  </section>
+</main>
+
+<nav class="tabs" role="tablist">
+  <div class="in">
+    <button role="tab" data-tab="s1" aria-selected="true">Séance 1</button>
+    <button role="tab" data-tab="cardio" aria-selected="false">Cardio</button>
+    <button role="tab" data-tab="cf" aria-selected="false">CrossFit</button>
+    <button role="tab" data-tab="hist" aria-selected="false">Suivi</button>
+  </div>
+</nav>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+(function(){
+const WARM = [
+  'Rameur facile — 2 min',
+  'Cercles de bras — 10 vers l’avant, 10 vers l’arrière',
+  'Rotations externes à la poulie (charge très légère), coude collé au corps — 1 × 15 par bras',
+  'Y-T-W sans charge, buste penché en avant — 1 × 8 de chaque',
+  '1re série très légère (~50 %) sur chaque exercice lourd'
+];
+const BLOCS = [
+  {l:'A', rest:'1 min 30', ex:[
+    {id:'tv', n:'Tirage vertical (devant)', r:[12,12], alt:'Tirage vertical prise neutre'},
+    {id:'dc', n:'Développé couché haltères', r:[12,12], alt:'Développé couché barre, coudes à 45°'}]},
+  {l:'B', rest:'1 à 1 min 30', ex:[
+    {id:'po', n:'Pompes', r:[12,15], alt:'Développé couché haltères prise neutre', isNew:true, bw:true},
+    {id:'th', n:'Tirage horizontal', r:[12,15], alt:'Tirage horizontal prise serrée ou neutre'}]},
+  {l:'C', rest:'1 à 1 min 30', ex:[
+    {id:'dm', n:'Développé militaire haltères assis', r:[12,15], alt:'Développé épaules à la machine'},
+    {id:'el', n:'Élévations latérales (bras légèrement en avant)', r:[12,15], alt:'Élévations latérales à la poulie'}]},
+  {l:'D', rest:'1 min 30', ex:[
+    {id:'bf', n:'Barre au front', r:[12,12], alt:'Extensions triceps à la poulie'},
+    {id:'cu', n:'Curl haltères', r:[12,12], alt:'Curl à la poulie'}]},
+  {l:'E', rest:'~45 s', ex:[
+    {id:'fp', n:'Face pulls', r:[15,15], alt:'Rowing haltères coudes hauts, buste penché', isNew:true},
+    {id:'oi', n:'Oiseau', r:[15,15], alt:'Reverse fly à la machine', isNew:true}]}
+];
+const ALL_EX = BLOCS.flatMap(b=>b.ex);
+const MACHINES = [
+  {id:'ra', n:'Rameur', d:'15 min', c:'≈ 2’30–3’ / 500 m', ph:'Allure moyenne, ex. 2’45'},
+  {id:'es', n:'Escalier', d:'15 min', c:'Vitesse 5 ou + — sans tenir', ph:'Vitesse tenue'},
+  {id:'e1', n:'Echo Bike — facile', d:'5 min', c:'≈ 100 W', ph:'Watts moyens'},
+  {id:'e2', n:'Echo Bike — intervalles', d:'5 min', c:'5 × (30 s ≈ 300 W + 30 s ≈ 100 W)', ph:'Watts atteints en effort', interval:true},
+  {id:'e3', n:'Echo Bike — retour au calme', d:'5 min', c:'≈ 100 W', ph:'Watts moyens'},
+  {id:'sk', n:'SkiErg', d:'15 min', c:'≈ 2’30–3’ / 500 m', ph:'Allure moyenne', shoulder:true}
+];
+const TYPES = {s1:'Séance 1 · Haut du corps', cardio:'Séance 2 · Cardio', cf:'Séance 3 · CrossFit'};
+
+let state = {sessions:[], measures:[]};
+let store = null; // {load, save, label}
+const midnight=d=>{const x=new Date(d);x.setHours(0,0,0,0);return x;};
+let selDay = midnight(new Date());
+let weekOffset = 0;
+const isToday=d=>midnight(d).getTime()===midnight(new Date()).getTime();
+const $ = s=>document.querySelector(s);
+const esc = s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function toast(t){const e=$('#toast');e.textContent=t;e.classList.add('on');clearTimeout(e._t);e._t=setTimeout(()=>e.classList.remove('on'),2200);}
+function fmtDate(iso){const d=new Date(iso);return d.toLocaleDateString('fr-FR',{weekday:'short',day:'numeric',month:'short'});}
+
+/* ---------- storage ---------- */
+const LS_KEY='plan-moez-v1';
+const local = {
+  label:'Données enregistrées sur ce téléphone uniquement',
+  async load(){try{const v=localStorage.getItem(LS_KEY);return v?JSON.parse(v):null;}catch(e){return null;}},
+  async save(s){try{localStorage.setItem(LS_KEY,JSON.stringify(s));}catch(e){}}
+};
+function initStore(){ store = local; $('#sync').textContent = local.label; }
+function normalize(d){return {sessions:Array.isArray(d.sessions)?d.sessions:[], measures:Array.isArray(d.measures)?d.measures:[]};}
+async function persist(){ await local.save(state); }
+
+/* ---------- draft (per device) ---------- */
+const DRAFT='plan-moez-draft';
+function saveDraft(){try{localStorage.setItem(DRAFT,JSON.stringify(collectAll()));}catch(e){}}
+function loadDraft(){try{return JSON.parse(localStorage.getItem(DRAFT)||'null');}catch(e){return null;}}
+function clearDraft(kind){try{const d=loadDraft()||{};delete d[kind];localStorage.setItem(DRAFT,JSON.stringify(d));}catch(e){}}
+
+/* ---------- helpers ---------- */
+function lastOf(type){return state.sessions.filter(s=>s.type===type).sort((a,b)=>b.date.localeCompare(a.date))[0];}
+function lastEx(id){
+  const ss = state.sessions.filter(s=>s.type==='s1' && s.data && s.data.ex && s.data.ex[id]).sort((a,b)=>b.date.localeCompare(a.date));
+  return ss[0] ? {ex:ss[0].data.ex[id], pain:ss[0].pain, painNext:ss[0].painNext} : null;
+}
+function hintFor(e){
+  const l = lastEx(e.id);
+  if(!l) return {cls:'', t:'Première fois : choisis une charge qui te laisse 2–3 reps en réserve.'};
+  const reps = (l.ex.reps||[]).map(Number).filter(n=>!isNaN(n)&&n>0);
+  const top = e.r[1];
+  const kg = l.ex.kg ? l.ex.kg+' kg' : (e.bw?'poids du corps':'—');
+  const altTxt = l.ex.alt ? ' (alternative)' : '';
+  const worst = Math.max(Number(l.pain)||0, Number(l.painNext)||0);
+  if(worst>3) return {cls:'hold', t:`Dernière fois : ${kg}${altTxt}. Gêne à ${worst}/10 → garde la même charge ou passe à l’alternative.`};
+  if(reps.length===3 && reps.every(r=>r>=top)) return {cls:'up', t:`Dernière fois : ${kg}${altTxt}, 3 × ${top} réussi → tu peux monter un peu la charge.`};
+  return {cls:'', t:`Dernière fois : ${kg}${altTxt} · reps ${reps.join(' / ')||'—'}`};
+}
+
+/* ---------- render: séance 1 ---------- */
+function renderS1(draft){
+  const d = (draft&&draft.s1)||{};
+  $('#warm').innerHTML = WARM.map((w,i)=>`<label><input type="checkbox" data-warm="${i}" ${d.warm&&d.warm[i]?'checked':''}><span>${esc(w)}</span></label>`).join('');
+  $('#blocs').innerHTML = BLOCS.map(b=>`
+    <div class="bloc">
+      <div class="letter" aria-hidden="true">${b.l}</div>
+      <div>
+        ${b.ex.map(e=>{
+          const de=(d.ex&&d.ex[e.id])||{};
+          const last=lastEx(e.id);
+          const kg = de.kg ?? (last&&last.ex.kg) ?? '';
+          const h=hintFor(e);
+          const alt = de.alt ?? (last&&last.ex.alt) ?? false;
+          return `<div class="ex ${alt?'use-alt':''}" data-ex="${e.id}">
+            <div class="name">${e.isNew?'<span class="tag">NEW</span>':''}${esc(e.n)}</div>
+            <div class="meta">3 × ${e.r[0]===e.r[1]?e.r[0]:e.r[0]+'–'+e.r[1]}</div>
+            <div class="row">
+              <label class="field kg"><span>${e.bw?'Lest (kg)':'Charge (kg)'}</span><input type="number" inputmode="decimal" step="0.5" data-k="kg" value="${esc(kg)}"></label>
+              ${[0,1,2].map(i=>`<label class="field"><span>Série ${i+1}</span><input type="number" inputmode="numeric" data-k="r${i}" placeholder="${e.r[1]}" value="${esc((de.reps||[])[i]??'')}"></label>`).join('')}
+            </div>
+            <label class="alt"><input type="checkbox" data-k="alt" ${alt?'checked':''}> <span>Alternative : <span class="altname">${esc(e.alt)}</span></span></label>
+            <div class="hint ${h.cls}">${esc(h.t)}</div>
+          </div>`;}).join('')}
+        <div class="rest">Repos après chaque tour : ${b.rest}</div>
+      </div>
+    </div>`).join('');
+  renderPain('s1', d.pain??0);
+  $('#note-s1').value = d.note||'';
+}
+function renderPain(kind, v){
+  const el = $('#pain-'+kind);
+  el.innerHTML = `<div class="lab"><span>Gêne à l’épaule droite</span><span class="val" data-val>${v}/10</span></div>
+    <input type="range" min="0" max="10" step="1" value="${v}" aria-label="Gêne à l’épaule droite, de 0 à 10">
+    <div class="scale"><span>0 aucune</span><span>10 très forte</span></div>
+    <div class="msg" data-msg></div>`;
+  const upd=()=>{const n=+el.querySelector('input').value;el.querySelector('[data-val]').textContent=n+'/10';
+    el.classList.toggle('high',n>3);
+    el.querySelector('[data-msg]').textContent = n>3 ? 'Au-dessus de 3 : réduis la charge ou passe à l’alternative la prochaine fois, et parles-en à Julien.' : (n>0?'Gêne légère : ok si elle disparaît après la séance.':'');};
+  el.querySelector('input').addEventListener('input',()=>{upd();saveDraft();});
+  upd();
+}
+
+/* ---------- render: cardio ---------- */
+function renderCardio(draft){
+  const d=(draft&&draft.cardio)||{};
+  $('#machines').innerHTML = MACHINES.map((m,i)=>{
+    const dm=(d.m&&d.m[m.id])||{};
+    return `<div class="machine ${m.interval?'interval':''}" data-m="${m.id}">
+      <div class="n">${i+1}</div>
+      <div><div class="t">${esc(m.n)} · ${m.d}</div><div class="c">${esc(m.c)}</div>
+      ${m.shoulder?'<div class="note-sh">Si l’épaule droite réagit : mains moins hautes, ou remplace par du vélo.</div>':''}</div>
+      <div class="ctl">
+        <label class="done"><input type="checkbox" data-k="done" ${dm.done?'checked':''}> Fait</label>
+        <input type="text" data-k="val" placeholder="${esc(m.ph)}" value="${esc(dm.val||'')}" aria-label="${esc(m.n)} : valeur réalisée">
+        ${m.shoulder?`<label class="done"><input type="checkbox" data-k="swap" ${dm.swap?'checked':''}> Remplacé par vélo</label>`:''}
+      </div>
+    </div>`;}).join('');
+  renderPain('cardio', d.pain??0);
+  $('#note-cardio').value=d.note||'';
+}
+function renderCf(draft){
+  const d=(draft&&draft.cf)||{};
+  $('#cf-wod').value=d.wod||''; $('#cf-dur').value=d.dur||''; $('#cf-notes').value=d.notes||'';
+  renderPain('cf', d.pain??0);
+}
+
+/* ---------- collect ---------- */
+function painOf(kind){return +$('#pain-'+kind+' input').value;}
+function collectS1(){
+  const ex={};
+  document.querySelectorAll('#blocs .ex').forEach(el=>{
+    const g=k=>el.querySelector(`[data-k="${k}"]`);
+    ex[el.dataset.ex]={kg:g('kg').value, reps:[g('r0').value,g('r1').value,g('r2').value], alt:g('alt').checked};
+  });
+  const warm=[...document.querySelectorAll('[data-warm]')].map(i=>i.checked);
+  return {ex, warm, pain:painOf('s1'), note:$('#note-s1').value};
+}
+function collectCardio(){
+  const m={};
+  document.querySelectorAll('#machines .machine').forEach(el=>{
+    const g=k=>el.querySelector(`[data-k="${k}"]`);
+    m[el.dataset.m]={done:g('done').checked, val:g('val').value, swap:g('swap')?g('swap').checked:false};
+  });
+  return {m, pain:painOf('cardio'), note:$('#note-cardio').value};
+}
+function collectCf(){return {wod:$('#cf-wod').value,dur:$('#cf-dur').value,notes:$('#cf-notes').value,pain:painOf('cf')};}
+function collectAll(){return {s1:collectS1(),cardio:collectCardio(),cf:collectCf()};}
+
+/* ---------- save ---------- */
+async function saveSession(type){
+  let data, pain;
+  if(type==='s1'){const c=collectS1();pain=c.pain;data={ex:{},note:c.note};
+    for(const [k,v] of Object.entries(c.ex)){ if(v.kg||v.reps.some(r=>r)) data.ex[k]=v; }
+    if(!Object.keys(data.ex).length){toast('Note au moins un exercice');return;}}
+  if(type==='cardio'){const c=collectCardio();pain=c.pain;data={m:c.m,note:c.note};
+    if(!Object.values(c.m).some(x=>x.done||x.val)){toast('Coche au moins une machine');return;}}
+  if(type==='cf'){const c=collectCf();pain=c.pain;data={wod:c.wod,dur:c.dur,notes:c.notes};
+    if(!c.wod.trim()){toast('Ajoute le WOD du coach');return;}}
+  const when = isToday(selDay) ? new Date() : (()=>{const x=new Date(selDay);x.setHours(12,0,0,0);return x;})();
+  state.sessions.push({id:Date.now().toString(36), date:when.toISOString(), type, pain, painNext:null, data});
+  clearDraft(type);
+  selDay = midnight(new Date()); weekOffset = 0;
+  await persist();
+  renderAll(true);
+  toast('Séance enregistrée pour le '+new Date(state.sessions[state.sessions.length-1].date).toLocaleDateString('fr-FR',{day:'numeric',month:'long'}));
+  window.scrollTo({top:0});
+}
+
+/* ---------- history ---------- */
+function renderWeek(){
+  const now=new Date(); const day=(now.getDay()+6)%7;
+  const mon=midnight(now); mon.setDate(mon.getDate()-day+weekOffset*7);
+  const names=['L','M','M','J','V','S','D'];
+  let h='';
+  for(let i=0;i<7;i++){
+    const d=new Date(mon); d.setDate(mon.getDate()+i);
+    const key=d.toDateString();
+    const s=state.sessions.filter(x=>new Date(x.date).toDateString()===key);
+    const cls=s.length?'done-'+s[s.length-1].type:'';
+    const future=d>midnight(now);
+    const sel=d.getTime()===selDay.getTime();
+    const lab=d.toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long'})+(s.length?' — '+s.map(x=>TYPES[x.type]).join(', '):'');
+    h+=`<button class="d ${cls} ${isToday(d)?'today':''} ${sel?'sel':''}" data-day="${d.getTime()}" ${future?'disabled':''} aria-pressed="${sel}" aria-label="${esc(lab)}">${names[i]}<b>${d.getDate()}</b></button>`;
+  }
+  $('#week').innerHTML=h;
+  $('#wk-next').disabled = weekOffset>=0;
+  $('#seldate').innerHTML = isToday(selDay)
+    ? 'Séance enregistrée pour : <b>aujourd’hui</b>'
+    : `Séance enregistrée pour : <b>${esc(selDay.toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long'}))}</b><button id="sel-today">Revenir à aujourd’hui</button>`;
+}
+function renderChart(){
+  const pts=state.sessions.slice().sort((a,b)=>a.date.localeCompare(b.date)).slice(-20);
+  if(pts.length<2){$('#chart').innerHTML='<div class="cap">Le graphique apparaît après 2 séances enregistrées.</div>';return;}
+  const W=600,H=170,p=28, n=pts.length;
+  const x=i=>p+i*(W-2*p)/(n-1), y=v=>H-p-(v/10)*(H-2*p);
+  const col={s1:'var(--s1)',cardio:'var(--cardio)',cf:'var(--cf)'};
+  const line=pts.map((s,i)=>`${i?'L':'M'}${x(i).toFixed(1)},${y(Math.max(s.pain||0,s.painNext||0)).toFixed(1)}`).join(' ');
+  $('#chart').innerHTML=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Évolution de la gêne à l’épaule">
+    <rect x="${p}" y="${y(10)}" width="${W-2*p}" height="${y(3)-y(10)}" fill="var(--warn-soft)"/>
+    <line x1="${p}" x2="${W-p}" y1="${y(3)}" y2="${y(3)}" stroke="var(--warn)" stroke-dasharray="4 4" stroke-width="1"/>
+    <text x="${W-p}" y="${y(3)-5}" text-anchor="end" font-size="12" fill="var(--warn)">seuil 3/10</text>
+    ${[0,5,10].map(v=>`<text x="${p-8}" y="${y(v)+4}" text-anchor="end" font-size="11" fill="var(--muted)">${v}</text>`).join('')}
+    <path d="${line}" fill="none" stroke="var(--ink)" stroke-width="2"/>
+    ${pts.map((s,i)=>`<circle cx="${x(i)}" cy="${y(Math.max(s.pain||0,s.painNext||0))}" r="5" fill="${col[s.type]}"/>`).join('')}
+  </svg><div class="cap">Valeur la plus haute entre la séance et le lendemain · 20 dernières séances</div>`;
+}
+function renderMeasures(){
+  const m=state.measures.slice().sort((a,b)=>b.date.localeCompare(a.date));
+  $('#m-list').innerHTML = m.length? `<table class="m"><thead><tr><th>Date</th><th>Poids</th><th>Taille</th></tr></thead><tbody>${m.map(r=>`<tr><td>${fmtDate(r.date)}</td><td>${r.poids?esc(r.poids)+' kg':'—'}</td><td>${r.taille?esc(r.taille)+' cm':'—'}</td></tr>`).join('')}</tbody></table>`:'';
+}
+function sessDetail(s){
+  if(s.type==='s1') return '<ul>'+Object.entries(s.data.ex||{}).map(([id,v])=>{const e=ALL_EX.find(x=>x.id===id);if(!e)return'';
+    return `<li>${esc(v.alt?e.alt:e.n)} : ${v.kg?esc(v.kg)+' kg':(e.bw?'PDC':'—')} · ${v.reps.filter(r=>r).map(esc).join(' / ')||'—'}</li>`;}).join('')+'</ul>'+(s.data.note?`<p style="margin:8px 0 0;font-size:.9rem">${esc(s.data.note)}</p>`:'');
+  if(s.type==='cardio') return '<ul>'+MACHINES.map(m=>{const v=(s.data.m||{})[m.id]||{};if(!v.done&&!v.val)return'';
+    return `<li>${esc(v.swap?'Vélo (à la place du SkiErg)':m.n)} ${v.done?'✓':''} ${v.val?'· '+esc(v.val):''}</li>`;}).join('')+'</ul>'+(s.data.note?`<p style="margin:8px 0 0;font-size:.9rem">${esc(s.data.note)}</p>`:'');
+  return `<p style="margin:8px 0 0;font-size:.9rem;white-space:pre-wrap">${esc(s.data.wod)}${s.data.dur?'\n'+esc(s.data.dur):''}${s.data.notes?'\n'+esc(s.data.notes):''}</p>`;
+}
+function renderHist(){
+  const ss=state.sessions.slice().sort((a,b)=>b.date.localeCompare(a.date));
+  if(!ss.length){$('#hist').innerHTML='<div class="empty">Aucune séance pour l’instant. Enregistre ta première séance depuis les onglets du bas.</div>';return;}
+  $('#hist').innerHTML=ss.map(s=>{
+    const worst=Math.max(s.pain||0,s.painNext||0);
+    return `<details class="sess ${s.type}" data-id="${s.id}">
+      <summary><div><div class="when">${fmtDate(s.date)}</div><div class="kind">${TYPES[s.type]}</div></div>
+      <span class="badge ${worst>3?'high':''}">épaule ${worst}/10</span></summary>
+      ${sessDetail(s)}
+      <div class="next">Gêne le lendemain :
+        <select data-next aria-label="Gêne à l’épaule le lendemain"><option value="">—</option>${[...Array(11).keys()].map(i=>`<option ${s.painNext===i?'selected':''}>${i}</option>`).join('')}</select>
+      </div>
+      <button class="del" data-del>Supprimer cette séance</button>
+    </details>`;}).join('');
+}
+function renderAll(keepDraft){
+  const draft = keepDraft? null : loadDraft();
+  renderWeek();
+  const cur = keepDraft ? collectAll() : draft;
+  renderS1(cur); renderCardio(cur); renderCf(cur);
+  renderChart(); renderMeasures(); renderHist();
+}
+
+/* ---------- events ---------- */
+document.querySelectorAll('nav.tabs button').forEach(b=>b.addEventListener('click',()=>{
+  document.querySelectorAll('nav.tabs button').forEach(x=>x.setAttribute('aria-selected',x===b));
+  document.querySelectorAll('section.panel').forEach(p=>p.classList.toggle('on',p.id==='p-'+b.dataset.tab));
+  try{localStorage.setItem('plan-moez-tab',b.dataset.tab);}catch(e){}
+  window.scrollTo({top:0});
+}));
+document.addEventListener('input',e=>{ if(e.target.closest('main')) saveDraft(); });
+document.addEventListener('change',e=>{
+  const t=e.target;
+  if(t.dataset.k==='alt'){t.closest('.ex').classList.toggle('use-alt',t.checked);}
+  if(t.matches('[data-next]')){
+    const id=t.closest('.sess').dataset.id; const s=state.sessions.find(x=>x.id===id);
+    s.painNext = t.value===''?null:+t.value; persist(); renderChart();
+    const w=Math.max(s.pain||0,s.painNext||0); const b=t.closest('.sess').querySelector('.badge'); b.textContent='épaule '+w+'/10'; b.classList.toggle('high',w>3);
+  }
+  if(t.closest('main')) saveDraft();
+});
+document.addEventListener('click',e=>{
+  if(e.target.matches('[data-del]')){
+    const id=e.target.closest('.sess').dataset.id;
+    if(!confirm('Supprimer cette séance ?'))return;
+    state.sessions=state.sessions.filter(x=>x.id!==id); persist(); renderWeek(); renderChart(); renderHist(); toast('Séance supprimée');
+  }
+});
+$('#week').addEventListener('click',e=>{const b=e.target.closest('button.d');if(!b||b.disabled)return;selDay=new Date(+b.dataset.day);renderWeek();});
+$('#seldate').addEventListener('click',e=>{if(e.target.id==='sel-today'){selDay=midnight(new Date());weekOffset=0;renderWeek();}});
+$('#wk-prev').addEventListener('click',()=>{weekOffset--;renderWeek();});
+$('#wk-next').addEventListener('click',()=>{if(weekOffset<0){weekOffset++;renderWeek();}});
+$('#save-s1').addEventListener('click',()=>saveSession('s1'));
+$('#save-cardio').addEventListener('click',()=>saveSession('cardio'));
+$('#save-cf').addEventListener('click',()=>saveSession('cf'));
+$('#m-add').addEventListener('click',async()=>{
+  const p=$('#m-poids').value, t=$('#m-taille').value;
+  if(!p&&!t){toast('Entre un poids ou un tour de taille');return;}
+  state.measures.push({date:new Date().toISOString(),poids:p,taille:t});
+  $('#m-poids').value='';$('#m-taille').value='';
+  await persist(); renderMeasures(); toast('Mesure ajoutée');
+});
+
+/* ---------- boot ---------- */
+(async()=>{
+  const loc=await local.load(); if(loc) state=normalize(loc);
+  renderAll(false);
+  try{const t=localStorage.getItem('plan-moez-tab'); if(t){const b=document.querySelector(`nav.tabs button[data-tab="${t}"]`); b&&b.click();}}catch(e){}
+  $('#sync').textContent=local.label;
+  initStore();
+})();
+})();
+</script>
+</body>
+</html>
