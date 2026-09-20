@@ -131,9 +131,12 @@ textarea{width:100%;min-height:80px;border:1px solid var(--line);border-radius:1
 .machine .n{font-family:var(--head);font-weight:800;font-size:1.5rem;color:var(--cardio);line-height:1.1;text-align:center}
 .machine .t{font-weight:600}
 .machine .c{font-size:.85rem;color:var(--muted)}
-.machine .ctl{grid-column:2;display:flex;gap:8px;align-items:center;margin-top:6px;flex-wrap:wrap}
-.machine .ctl input[type=text]{flex:1;min-width:140px;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--surface2)}
-.machine .done{display:flex;align-items:center;gap:6px;font-size:.85rem;cursor:pointer}
+.machine .ctl{grid-column:2;display:flex;gap:8px;align-items:flex-end;margin-top:8px;flex-wrap:wrap}
+.machine .ctl .mval{flex:1;min-width:150px}
+.machine .ctl input[type=text]{width:100%;padding:9px 10px;border:1px solid var(--line);border-radius:8px;background:var(--surface2);text-align:left}
+.machine .ctl .field input[type=number]{width:74px}
+.machine .done{padding-bottom:9px}
+.machine .done{display:flex;align-items:center;gap:6px;font-size:.85rem;cursor:pointer;white-space:nowrap}
 .machine .done input{width:20px;height:20px;accent-color:var(--cardio)}
 .machine.interval{border-color:var(--cardio);background:var(--cardio-soft)}
 .note-sh{font-size:.82rem;color:var(--warn);margin-top:4px}
@@ -285,6 +288,7 @@ table.m th{font-weight:600;color:var(--muted);font-size:.8rem}
     <h2>Cardio</h2>
     <p class="lead">65 min + 10 min de gainage. Démarre le rameur tranquillement 3 à 5 min pour t’échauffer.</p>
     <div id="machines"></div>
+    <p class="lead" id="cardio-total" style="margin-top:8px"></p>
     <h3>Gainage · 10 min</h3>
     <p class="lead" style="margin-bottom:6px">Les 3 exercices enchaînés, puis 45 s de repos. 3 tours. Ça renforce la sangle abdominale et le dos ; c’est la perte de graisse globale qui affine le ventre.</p>
     <div class="bloc"><div class="letter" aria-hidden="true" style="color:var(--cardio)">G</div><div id="core"></div></div>
@@ -380,6 +384,12 @@ table.m th{font-weight:600;color:var(--muted);font-size:.8rem}
     <h3>Séances</h3>
     <div id="hist"></div>
 
+    <h3>Sauvegarde</h3>
+    <p class="lead" style="margin-bottom:8px">Tes données sont sur ce seul navigateur. Enregistre une copie (iCloud Drive, Google Drive, Fichiers) et restaure-la sur un autre appareil ou après un changement de téléphone.</p>
+    <div class="exbtns"><button id="bk-save">Sauvegarder</button><button id="bk-restore" class="ghost">Restaurer</button></div>
+    <input id="bk-file" type="file" accept="application/json,.json" hidden>
+    <p class="lead" id="bk-info" style="margin-top:6px"></p>
+
     <div class="shoulder">
       <b>Repères épaule.</b> Gêne légère qui disparaît après la séance : en général acceptable. Douleur vive pendant un mouvement, ou qui persiste le lendemain : réduire la charge ou passer à l’alternative. Si ça revient souvent, un bilan chez un kiné vaut le coup.
     </div>
@@ -464,7 +474,7 @@ const ALL_EX = BLOCS.concat(BLOCS_JB).flatMap(b=>b.ex).concat(CORE);
 const TYPES = {s1:'Épaules & bras', jb:'Jambes & gainage', cardio:'Cardio', cf:'CrossFit'};
 const TYPE_COLORS = [['s1','var(--s1)','Épaules'],['jb','var(--jb)','Jambes'],['cardio','var(--cardio)','Cardio'],['cf','var(--cf)','CrossFit']];
 
-let state = {sessions:[], measures:[], goal:2, food:{}, foodCfg:{hours:8,end:'20:30'}};
+var state = {sessions:[], measures:[], goal:2, food:{}, foodCfg:{hours:8,end:'20:30'}};
 let store = null; // {load, save, label}
 const midnight=d=>{const x=new Date(d);x.setHours(0,0,0,0);return x;};
 let selDay = midnight(new Date());
@@ -497,6 +507,10 @@ function lastOf(type){return state.sessions.filter(s=>s.type===type).sort((a,b)=
 function lastEx(id){
   const ss = state.sessions.filter(s=>s.data && s.data.ex && s.data.ex[id]).sort((a,b)=>b.date.localeCompare(a.date));
   return ss[0] ? {ex:ss[0].data.ex[id], pain:ss[0].pain, painNext:ss[0].painNext} : null;
+}
+function lastM(id){
+  const ss=state.sessions.filter(s=>s.type==='cardio' && s.data && s.data.m && s.data.m[id]).sort((a,b)=>b.date.localeCompare(a.date));
+  return ss[0]?ss[0].data.m[id]:null;
 }
 function hintFor(e){
   const l = lastEx(e.id);
@@ -565,14 +579,17 @@ function renderCardio(draft){
     const dm=(d.m&&d.m[m.id])||{};
     return `<div class="machine ${m.interval?'interval':''}" data-m="${m.id}">
       <div class="n">${i+1}</div>
-      <div><div class="t">${esc(m.n)} · ${m.d}</div><div class="c">${esc(m.c)}</div>
+      <div><div class="t">${esc(m.n)}</div><div class="c">Prévu ${m.d} · ${esc(m.c)}</div>
       ${m.shoulder?'<div class="note-sh">Si l’épaule droite réagit : mains moins hautes, ou remplace par du vélo.</div>':''}</div>
       <div class="ctl">
         <label class="done"><input type="checkbox" data-k="done" ${dm.done?'checked':''}> Fait</label>
-        <input type="text" data-k="val" placeholder="${esc(m.ph)}" value="${esc(dm.val||'')}" aria-label="${esc(m.n)} : valeur réalisée">
+        <label class="field"><span>Durée (min)</span><input type="number" inputmode="numeric" data-k="min" style="width:66px" placeholder="${esc(String(parseInt(m.d)||''))}" value="${esc(dm.min ?? (lastM(m.id)?lastM(m.id).min:'') ?? '')}" aria-label="${esc(m.n)} : minutes faites"></label>
+        <label class="field mval"><span>Allure / intensité</span><input type="text" data-k="val" placeholder="${esc(m.ph)}" value="${esc(dm.val||'')}" aria-label="${esc(m.n)} : intensité réalisée"></label>
         ${m.shoulder?`<label class="done"><input type="checkbox" data-k="swap" ${dm.swap?'checked':''}> Remplacé par vélo</label>`:''}
       </div>
     </div>`;}).join('');
+  const tot=MACHINES.reduce((a,m)=>a+(+(((d.m||{})[m.id]||{}).min)||0),0);
+  $('#cardio-total').textContent = tot? `Total saisi : ${tot} min de cardio` : 'Saisis les minutes réellement faites sur chaque machine.';
   $('#core').innerHTML = CORE.map(e=>exHTML(e,d)).join('');
   renderPain('cardio', d.pain??0);
   $('#note-cardio').value=d.note||'';
@@ -602,7 +619,7 @@ function collectCardio(){
   const m={};
   document.querySelectorAll('#machines .machine').forEach(el=>{
     const g=k=>el.querySelector(`[data-k="${k}"]`);
-    m[el.dataset.m]={done:g('done').checked, val:g('val').value, swap:g('swap')?g('swap').checked:false};
+    m[el.dataset.m]={done:g('done').checked, min:g('min').value, val:g('val').value, swap:g('swap')?g('swap').checked:false};
   });
   return {m, ex:collectEx('#core'), pain:painOf('cardio'), note:$('#note-cardio').value};
 }
@@ -617,7 +634,7 @@ async function saveSession(type){
     if(!Object.keys(data.ex).length){toast('Note au moins un exercice');return;}}
   if(type==='cardio'){const c=collectCardio();pain=c.pain;data={m:c.m,ex:{},note:c.note};
     for(const [k,v] of Object.entries(c.ex)){ if(v.kg||v.reps.some(r=>r)) data.ex[k]=v; }
-    if(!Object.values(c.m).some(x=>x.done||x.val) && !Object.keys(data.ex).length){toast('Coche au moins une machine');return;}}
+    if(!Object.values(c.m).some(x=>x.done||x.val||x.min) && !Object.keys(data.ex).length){toast('Coche au moins une machine');return;}}
   if(type==='cf'){const c=collectCf();pain=c.pain;data={wod:c.wod,dur:c.dur,notes:c.notes};
     if(!c.wod.trim()){toast('Ajoute le WOD du coach');return;}}
   const when = isToday(selDay) ? new Date() : (()=>{const x=new Date(selDay);x.setHours(12,0,0,0);return x;})();
@@ -731,8 +748,8 @@ function renderMeasures(){
 function sessDetail(s){
   if(s.type==='s1'||s.type==='jb') return '<ul>'+Object.entries(s.data.ex||{}).map(([id,v])=>{const e=ALL_EX.find(x=>x.id===id);if(!e)return'';
     return `<li>${esc(v.alt?e.alt:e.n)} : ${v.kg?esc(v.kg)+' kg':(e.bw?'PDC':'—')} · ${v.reps.filter(r=>r).map(esc).join(' / ')||'—'}</li>`;}).join('')+'</ul>'+(s.data.note?`<p style="margin:8px 0 0;font-size:.9rem">${esc(s.data.note)}</p>`:'');
-  if(s.type==='cardio') return '<ul>'+MACHINES.map(m=>{const v=(s.data.m||{})[m.id]||{};if(!v.done&&!v.val)return'';
-    return `<li>${esc(v.swap?'Vélo (à la place du SkiErg)':m.n)} ${v.done?'✓':''} ${v.val?'· '+esc(v.val):''}</li>`;}).join('')+Object.entries(s.data.ex||{}).map(([id,v])=>{const e=CORE.find(x=>x.id===id);if(!e)return'';return `<li>${esc(v.alt?e.alt:e.n)} : ${v.kg?esc(v.kg)+' kg · ':''}${v.reps.filter(r=>r).map(esc).join(' / ')}</li>`;}).join('')+'</ul>'+(s.data.note?`<p style="margin:8px 0 0;font-size:.9rem">${esc(s.data.note)}</p>`:'');
+  if(s.type==='cardio') return '<ul>'+MACHINES.map(m=>{const v=(s.data.m||{})[m.id]||{};if(!v.done&&!v.val&&!v.min)return'';
+    return `<li>${esc(v.swap?'Vélo (à la place du SkiErg)':m.n)} ${v.done?'✓':''} ${v.min?'· '+esc(v.min)+' min ':''}${v.val?'· '+esc(v.val):''}</li>`;}).join('')+Object.entries(s.data.ex||{}).map(([id,v])=>{const e=CORE.find(x=>x.id===id);if(!e)return'';return `<li>${esc(v.alt?e.alt:e.n)} : ${v.kg?esc(v.kg)+' kg · ':''}${v.reps.filter(r=>r).map(esc).join(' / ')}</li>`;}).join('')+'</ul>'+(s.data.note?`<p style="margin:8px 0 0;font-size:.9rem">${esc(s.data.note)}</p>`:'');
   return `<p style="margin:8px 0 0;font-size:.9rem;white-space:pre-wrap">${esc(s.data.wod)}${s.data.dur?'\n'+esc(s.data.dur):''}${s.data.notes?'\n'+esc(s.data.notes):''}</p>`;
 }
 function renderHist(){
@@ -862,8 +879,8 @@ function sessionText(s){
   L.push(`Séance ${TYPES[s.type]} — ${worst}`);
   if(s.data&&s.data.ex){for(const [id,v] of Object.entries(s.data.ex)){const e=ALL_EX.find(x=>x.id===id);if(!e)continue;
     L.push(`  - ${v.alt?e.alt+' (alternative)':e.n} : ${v.kg?v.kg+' kg':(e.bw||e.noKg?'poids du corps':'—')} · ${v.reps.filter(r=>r).join('/')||'—'}${e.sec?' s':''}`);}}
-  if(s.type==='cardio'&&s.data.m){for(const m of MACHINES){const v=s.data.m[m.id];if(!v||(!v.done&&!v.val))continue;
-    L.push(`  - ${v.swap?'Vélo (à la place du SkiErg)':m.n}${v.done?' ✓':''}${v.val?' · '+v.val:''}`);}}
+  if(s.type==='cardio'&&s.data.m){for(const m of MACHINES){const v=s.data.m[m.id];if(!v||(!v.done&&!v.val&&!v.min))continue;
+    L.push(`  - ${v.swap?'Vélo (à la place du SkiErg)':m.n}${v.done?' ✓':''}${v.min?' · '+v.min+' min':''}${v.val?' · '+v.val:''}`);}}
   if(s.type==='cf') L.push(`  - WOD : ${(s.data.wod||'').replace(/\n/g,' / ')}${s.data.dur?' · '+s.data.dur:''}${s.data.notes?' · '+s.data.notes:''}`);
   if(s.data&&s.data.note) L.push(`  Notes : ${s.data.note}`);
   return L.join('\n');
@@ -919,10 +936,12 @@ document.querySelectorAll('nav.tabs button').forEach(b=>b.addEventListener('clic
   try{localStorage.setItem('plan-moez-tab',b.dataset.tab);}catch(e){}
   window.scrollTo({top:0});
 }));
-document.addEventListener('input',e=>{ if(e.target.closest('main')) saveDraft(); });
+document.addEventListener('input',e=>{ if(e.target.dataset && e.target.dataset.k==='min'){const tot=[...document.querySelectorAll('#machines [data-k="min"]')].reduce((a,i)=>a+(+i.value||0),0);const el=$('#cardio-total');if(el)el.textContent=tot?`Total saisi : ${tot} min de cardio`:'';}
+  if(e.target.closest('main')) saveDraft(); });
 document.addEventListener('change',e=>{
   const t=e.target;
   if(t.id==='goal'){state.goal=+t.value;persist();renderDiscipline();return;}
+  if(t.dataset.k==='min'){const tot=[...document.querySelectorAll('#machines [data-k="min"]')].reduce((a,i)=>a+(+i.value||0),0);$('#cardio-total').textContent=tot?`Total saisi : ${tot} min de cardio`:'';}
   if(t.dataset.k==='alt'){t.closest('.ex').classList.toggle('use-alt',t.checked);}
   if(t.matches('[data-next]')){
     const id=t.closest('.sess').dataset.id; const s=state.sessions.find(x=>x.id===id);
@@ -967,6 +986,27 @@ $('#exp-copy').addEventListener('click',async()=>{const ta=$('#exp-text');
   catch(err){ta.focus();ta.select();try{document.execCommand('copy');toast('Copié');}catch(e2){toast('Sélectionne le texte et copie-le');}}});
 $('#exp-share').addEventListener('click',async()=>{try{await navigator.share({title:'Plan sportif — export',text:$('#exp-text').value});}catch(e){}});
 setInterval(()=>{ if(document.querySelector('#p-food.on') && foodSub==='journal' && isToday(selDay)) renderFood(); },60000);
+function bkName(){const d=new Date();return `sport-sauvegarde-${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}.json`;}
+$('#bk-save').addEventListener('click',async()=>{
+  const data=JSON.stringify({app:'sport-planifier',version:1,exportedAt:new Date().toISOString(),state},null,1);
+  const name=bkName(); const file=new File([data],name,{type:'application/json'});
+  try{ if(navigator.canShare && navigator.canShare({files:[file]})){ await navigator.share({files:[file],title:name}); return; } }catch(e){ if(e && e.name==='AbortError') return; }
+  try{ const url=URL.createObjectURL(new Blob([data],{type:'application/json'}));
+    const a=document.createElement('a'); a.href=url; a.download=name; document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(()=>URL.revokeObjectURL(url),2000); toast('Sauvegarde créée');
+  }catch(e){ toast('Sauvegarde impossible ici'); }
+});
+$('#bk-restore').addEventListener('click',()=>$('#bk-file').click());
+$('#bk-file').addEventListener('change',async e=>{
+  const f=e.target.files&&e.target.files[0]; e.target.value=''; if(!f)return;
+  try{
+    const raw=JSON.parse(await f.text()); const inc=normalize(raw.state||raw);
+    const n=inc.sessions.length, j=Object.keys(inc.food||{}).length;
+    if(!confirm(`Restaurer ${n} séance(s) et ${j} jour(s) de journal ?\nCela remplace les données actuelles de cet appareil.`)) return;
+    state=inc; await persist(); selDay=midnight(new Date()); weekOffset=0; renderAll(false);
+    $('#bk-info').textContent=`Restauré : ${n} séance(s), ${j} jour(s) de journal.`; toast('Données restaurées');
+  }catch(err){ toast('Fichier illisible'); }
+});
 $('#save-s1').addEventListener('click',()=>saveSession('s1'));
 $('#save-jb').addEventListener('click',()=>saveSession('jb'));
 $('#save-cardio').addEventListener('click',()=>saveSession('cardio'));
